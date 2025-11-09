@@ -1,15 +1,20 @@
 package com.example.budgettracker.ui.auth
 
 import android.util.Patterns
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-
+import com.example.budgettracker.R
 import com.example.budgettracker.data.local.User
 
 @Composable
@@ -44,72 +49,138 @@ fun AuthScreen(
         return true
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = if (isSignUp) "Create Account" else "Sign In",
-                style = MaterialTheme.typography.titleLarge
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-            Spacer(Modifier.height(20.dp))
-
-            OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
-            Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation()
-            )
-
-            if (isSignUp) {
-                Spacer(Modifier.height(10.dp))
-                OutlinedTextField(
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
-                    label = { Text("Confirm Password") },
-                    visualTransformation = PasswordVisualTransformation()
+                // App Logo
+                Image(
+                    painter = painterResource(id = R.drawable.app_logo),
+                    contentDescription = "App Logo",
+                    modifier = Modifier
+                        .size(90.dp)
+                        .padding(bottom = 8.dp)
                 )
-            }
 
-            Spacer(Modifier.height(20.dp))
+                // App Name
+                Text(
+                    text = "Budget Buddy",
+                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 26.sp),
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center
+                )
 
-            Button(onClick = {
-                error = null
-                if (!validate()) return@Button
-                if (isSignUp) {
-                    viewModel.register(email, password)
-                } else {
-                    viewModel.login(email, password) { user ->
-                        onAuthSuccess(user)
+                Spacer(Modifier.height(30.dp))
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (isSignUp) "Create Account" else "Sign In",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(Modifier.height(20.dp))
+
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = { Text("Email") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(Modifier.height(12.dp))
+
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Password") },
+                            visualTransformation = PasswordVisualTransformation(),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        if (isSignUp) {
+                            Spacer(Modifier.height(12.dp))
+                            OutlinedTextField(
+                                value = confirmPassword,
+                                onValueChange = { confirmPassword = it },
+                                label = { Text("Confirm Password") },
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        Spacer(Modifier.height(20.dp))
+
+                        Button(
+                            onClick = {
+                                error = null
+                                if (!validate()) return@Button
+                                if (isSignUp) {
+                                    viewModel.register(email, password)
+                                } else {
+                                    viewModel.login(email, password) { user ->
+                                        onAuthSuccess(user)
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(if (isSignUp) "Sign Up" else "Sign In")
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+
+                        TextButton(onClick = {
+                            isSignUp = !isSignUp
+                            error = null
+                        }) {
+                            Text(
+                                if (isSignUp) "Already have an account? Sign In"
+                                else "New user? Sign Up",
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        error?.let {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                it,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+
+                        message?.let {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                it,
+                                color = MaterialTheme.colorScheme.secondary,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 }
-            }) {
-                Text(if (isSignUp) "Sign Up" else "Sign In")
-            }
-
-            Spacer(Modifier.height(10.dp))
-
-            TextButton(onClick = {
-                isSignUp = !isSignUp
-                error = null
-            }) {
-                Text(if (isSignUp) "Already have an account? Sign In" else "New user? Sign Up")
-            }
-
-            error?.let {
-                Spacer(Modifier.height(8.dp))
-                Text(it, color = MaterialTheme.colorScheme.error)
-            }
-
-            message?.let {
-                Spacer(Modifier.height(8.dp))
-                Text(it, color = MaterialTheme.colorScheme.primary)
             }
         }
     }
